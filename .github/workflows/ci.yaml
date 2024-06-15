@@ -1,0 +1,33 @@
+name: CI
+on:
+ push:
+   branches:
+     - master
+jobs:
+ build:
+   runs-on: ubuntu-latest
+   steps:
+     - uses: actions/checkout@v2
+     - name: Use Node.js
+       uses: actions/setup-node@v1
+       with:
+         node-version: 12
+     - name: Install Dependencies
+       run: npm install
+     - name: Run Tests
+       run: npm test
+     - name: "Logs into Docker hub account"
+       uses: docker/login-action@v3
+       with:
+         username: ${{ secrets.DOCKERHUB_USERNAME }}
+         password: ${{ secrets.DOCKERHUB_PASSWORD }}
+     - name: Build our code image   # step description: builds our Docker image
+       env:                        # sets environment variables for this step
+        image_name: test-image     # image name variable
+        version: 1.1                                # version variable
+        username: bigstan00            # Docker Hub username
+       run: |                                              # script to run the Docker commands
+           docker build -t $username/$image_name:$version .  
+     - name: Push our image to Docker Hub
+       run: |
+           docker push bigstan00/test-image:1.1
